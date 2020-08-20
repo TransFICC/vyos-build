@@ -1,0 +1,88 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the current branch
+on:
+  push:
+    branches: [ current ]
+  pull_request:
+    branches: [ current ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Runs a single command using the runners shell
+    - name: Install docker and prerequisites
+      run: |
+        sudo apt update
+        sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+        curl  -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+        sudo apt update
+        sudo apt install -y docker-ce
+        
+    - name: Build docker container
+      run: |
+        cd $GITHUB_WORKSPACE
+        docker build -t vyos/vyos-build docker
+        
+    - name: Set VERSION variable
+      run: |
+        echo "::set-env name=VERSION::1.3-${GITHUB_HEAD_REF}-$(date +%Y%m%d%H%M)-transficc
+        
+    - uses: actions/upload-artifact@v2
+      with:
+        name: vyos-$VERSION
+        path: vyos-iso
+
+    - name: Build standard iso
+      run: |
+        docker run --rm -it --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION --custom-package 'freeipa-client krb5-pkinit lighttpd python3-apt tmux'; sudo make iso; sudo mv build/live-image-amd64.hybrid.iso build/vyos-$VERSION-standard.iso"
+        
+    - name: Build AWS iso
+      run: |
+        docker run --rm -it --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION --custom-package 'freeipa-client krb5-pkinit lighttpd python3-apt tmux'; sudo make AWS; sudo mv build/live-image-amd64.hybrid.iso build/vyos-$VERSION-aws.iso"
+        
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: $VERSION
+        release_name: Release $VERSION
+        draft: false
+        prerelease: false
+    
+    - name: Upload standard release asset
+      id: upload-release-asset-1
+      uses: action/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: $GITHUB_WORKSPACE/build/vyos-$VERSION-standard.iso
+        asset_name: vyos-standard.iso
+        asset_content_type: application/zip
+          
+    - name: Upload AWS release asset
+      id: upload-release-asset-2
+      uses: action/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: $GITHUB_WORKSPACE/build/vyos-$VERSION-aws.iso
+        asset_name: vyos-aws.iso
+        asset_content_type: application/zip
