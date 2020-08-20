@@ -48,13 +48,12 @@ jobs:
 
     - name: Build standard iso
       run: |
+        pwd
         cd $GITHUB_WORKSPACE
         docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'freeipa-client krb5-pkinit lighttpd python3-apt tmux'; sudo make iso"
+        mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
         pwd
-        ls -l build
-        echo $GITHUB_WORKSPACE
-        ls -l $GITHUB_WORKSPACE/build
-        mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso $GITHUB_WORKSPACE/build/vyos-$VERSION-standard.iso
+        ls -l . build
         
 #    - name: Build AWS iso
 #      run: |
@@ -79,7 +78,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ${{ env.GITHUB_WORKSPACE }}/build/vyos-${{ env.VERSION }}-standard.iso
+        asset_path: ./vyos-${{ env.VERSION }}-standard.iso
         asset_name: vyos-standard.iso
         asset_content_type: application/zip
           
@@ -90,6 +89,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ${{ env.GITHUB_WORKSPACE }}/build/vyos-${{ env.VERSION }}-aws.iso
+        asset_path: ./vyos-${{ env.VERSION }}-aws.iso
         asset_name: vyos-aws.iso
         asset_content_type: application/zip
