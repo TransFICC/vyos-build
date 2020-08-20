@@ -32,10 +32,15 @@ jobs:
         sudo apt update
         sudo apt install -y docker-ce docker-ce-cli containerd.io
         
-    - name: Build docker container
+#    - name: Build docker container
+#      run: |
+#        cd $GITHUB_WORKSPACE
+#        docker build -t vyos/vyos-build docker
+        
+    - name: Pull docker container
       run: |
         cd $GITHUB_WORKSPACE
-        docker build -t vyos/vyos-build docker
+        docker pull vyos/vyos-build:current
         
     - name: Set VERSION variable
       run: |
@@ -48,11 +53,11 @@ jobs:
 
     - name: Build standard iso
       run: |
-        docker run --rm -it --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION --custom-package 'freeipa-client krb5-pkinit lighttpd python3-apt tmux'; sudo make iso; sudo mv build/live-image-amd64.hybrid.iso build/vyos-$VERSION-standard.iso"
+        docker run --rm -it --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION --custom-package 'freeipa-client krb5-pkinit lighttpd python3-apt tmux'; sudo make iso; sudo mv build/live-image-amd64.hybrid.iso build/vyos-$VERSION-standard.iso"
         
     - name: Build AWS iso
       run: |
-        docker run --rm -it --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION --custom-package 'freeipa-client krb5-pkinit lighttpd python3-apt tmux'; sudo make AWS; sudo mv build/live-image-amd64.hybrid.iso build/vyos-$VERSION-aws.iso"
+        docker run --rm -it --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION --custom-package 'freeipa-client krb5-pkinit lighttpd python3-apt tmux'; sudo make AWS; sudo mv build/live-image-amd64.hybrid.iso build/vyos-$VERSION-aws.iso"
         
     - name: Create release
       id: create_release
