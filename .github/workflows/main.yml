@@ -50,11 +50,6 @@ jobs:
         pwd
         ls -l . build
         
-    - uses: actions/upload-artifact@v2
-      with:
-        name: vyos-${{ env.VERSION }}-standard.iso
-        path: ./vyos-${{ env.VERSION }}-standard.iso
-
     - name: Build AWS iso
       run: |
         pwd
@@ -63,11 +58,6 @@ jobs:
         mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
         pwd
         ls -l . build
-        
-    - uses: actions/upload-artifact@v2
-      with:
-        name: vyos-${{ env.VERSION }}-aws.iso
-        path: ./vyos-${{ env.VERSION }}-aws.iso
 
     - name: Create release
       id: create_release
