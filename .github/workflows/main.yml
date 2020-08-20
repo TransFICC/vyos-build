@@ -44,7 +44,7 @@ jobs:
         
     - name: Set VERSION variable
       run: |
-        echo "::set-env name=VERSION::1.3-${GITHUB_HEAD_REF}-$(date +%Y%m%d%H%M)-transficc
+        echo "::set-env name=VERSION::1.3-${GITHUB_HEAD_REF}-$(date +%Y%m%d%H%M)-transficc"
         
     - uses: actions/upload-artifact@v2
       with:
