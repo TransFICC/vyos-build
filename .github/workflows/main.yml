@@ -35,7 +35,7 @@ jobs:
     - name: Pull docker container
       run: |
         cd $GITHUB_WORKSPACE
-        docker pull vyos/vyos-build:current
+        docker pull vyos/vyos-build:equuleus
         
     - name: Set VERSION variable
       run: |
