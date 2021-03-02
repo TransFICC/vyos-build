@@ -6,7 +6,7 @@ name: CI
 # events but only for the current branch
 on:
   push:
-    branches: [ current ]
+    branches: [ current, rebased-upstream ]
   pull_request:
     branches: [ current ]
 
