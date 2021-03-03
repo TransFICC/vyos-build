@@ -34,7 +34,7 @@ jobs:
 
     - name: Set VERSION variable
       run: |
-        echo "VERSION=1.3-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
+        echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
         
     - name: Build standard iso
       run: |
