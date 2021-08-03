@@ -38,8 +38,11 @@ jobs:
 
     - name: Add unstable repository and download debs required for freeipa-client and lighttpd
       run: |
-        echo "deb http://ftp.uk.debian.org/debian/ unstable main contrib non-free" | sudo tee /etc/apt/sources.list.d/debian-unstable.list
-        sudo apt update
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8B48AD6246925553
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 7638D0442B90D010
+        sudo add-apt-repository "deb http://ftp.de.debian.org/debian sid main contrib non-free"
+        # echo "deb http://ftp.uk.debian.org/debian/ unstable main contrib non-free" | sudo tee /etc/apt/sources.list.d/debian-unstable.list
+        # sudo apt update
         mkdir $GITHUB_WORKSPACE/packages/transficc
         cd $GITHUB_WORKSPACE/packages/transficc
         for package in libnspr4 libnss3 freeipa-common libnss3-tools librpmio8 librpm8 python3-cffi-backend python3-cffi python3-gssapi python3-ipalib python3-ipaclient freeipa-client lighttpd-mod-deflate
