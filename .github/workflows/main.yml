@@ -38,7 +38,7 @@ jobs:
 
     - name: Add unstable repository and download debs required for freeipa-client and lighttpd
       run: |
-        echo "deb http://ftp.uk.debian.org/debian/ unstable main contrib non-free" | tee /etc/apt/sources.list.d/debian-unstable
+        echo "deb http://ftp.uk.debian.org/debian/ unstable main contrib non-free" | sudo tee /etc/apt/sources.list.d/debian-unstable
         sudo apt update
         mkdir $GITHUB_WORKSPACE/packages/transficc
         cd $GITHUB_WORKSPACE/packages/transficc
