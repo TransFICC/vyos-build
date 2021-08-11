@@ -47,6 +47,17 @@ jobs:
           apt download -t sid $package
         done
         ls -la $GITHUB_WORKSPACE/packages
+
+    - name: Add powerdns repository and download debs required for previous pdns-recursor version
+      run: |
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FD380FBB
+        sudo add-apt-repository "deb http://repo.powerdns.com/debian buster-rec-43 main"
+        cd $GITHUB_WORKSPACE/packages
+        for package in pdns-recursor
+        do
+          apt download -t buster-rec-43 $package
+        done
+        ls -la $GITHUB_WORKSPACE/packages
         
     - name: Build standard iso
       run: |
