@@ -52,7 +52,7 @@ jobs:
       run: |
         pwd
         cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd pdns-recursor/buster libboost-context1.67.0/buster libprotobuf17/buster'; sudo make iso"
+        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libprotobuf17/buster pdns-recursor/buster'; sudo make iso"
         mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
         pwd
         ls -l . build
@@ -61,7 +61,7 @@ jobs:
       run: |
         pwd
         cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-aws --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd pdns-recursor/buster libboost-context1.67.0/buster libprotobuf17/buster'; sudo make AWS"
+        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-aws --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libprotobuf17/buster pdns-recursor/buster'; sudo make AWS"
         mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
         pwd
         ls -l . build
