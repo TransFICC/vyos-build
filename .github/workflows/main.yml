@@ -7,7 +7,7 @@ name: CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the current branch
-on:
+on: # yamllint disable-line rule:truthy
   push:
     branches: [ current ]
   pull_request:
@@ -21,97 +21,166 @@ jobs:
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:   
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
-    # Runs a single command using the runners shell
-    - name: Install docker and prerequisites
-      run: |
-        sudo apt update
-        sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-        sudo apt update
-        sudo apt install -y docker-ce docker-ce-cli containerd.io
+      # Runs a single command using the runners shell
+      - name: Install docker and prerequisites
+        run: |
+          sudo apt update
+          sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          sudo apt update
+          sudo apt install -y docker-ce docker-ce-cli containerd.io
 
-    - name: Set VERSION variable
-      run: |
-        echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
+      - name: Set VERSION variable
+        run: |
+          echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
 
-#   - name: Add sid/unstable repository and download debs required for freeipa-client and lighttpd
-#     run: |
-#       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
-#       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
-#       sudo add-apt-repository "deb http://ftp.de.debian.org/debian sid main contrib non-free"
-#       cd $GITHUB_WORKSPACE/packages
-#       for package in libnspr4 libnss3 freeipa-common libnss3-tools librpmio8 librpm8 python3-cffi-backend python3-cffi python3-gssapi python3-ipalib python3-ipaclient freeipa-client
-#       do
-#         apt download -t sid $package
-#       done
-#       ls -la $GITHUB_WORKSPACE/packages
+      - name: Set CUSTOM_PACKAGES variable
+        run: |
+          echo "CUSTOM_PACKAGES='krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'" >> $GITHUB_ENV
 
-#   - name: Build custom vyos-1x
-#     run: |
-#       cd $GITHUB_WORKSPACE
-#       wget http://dev.packages.vyos.net/repositories/current/pool/main/libv/libvyosconfig0/libvyosconfig0_0.0.10_amd64.deb
-#       sudo dpkg -i libvyosconfig0_0.0.10_amd64.deb
-#       sudo apt install debhelper gcc-multilib clang llvm libelf-dev libpcap-dev libzmq3-dev python3-coverage python3-lxml python3-sphinx python3-xmltodict quilt whois python3-nose dh-python python3-psutil libbpf-dev
-#       git clone https://github.com/vyos/vyos-1x.git
-#       cd vyos-1x
-#       git checkout 29463355
-#       # customisations will go here
-#       make all
-#       make deb
-#       find . -ls
+      - name: Update config.boot.default
+        run: |
+          cat <<CONFIG_BOOT_DEFAULT > $GITHUB_WORKSPACE/data/live-build-config/includes.chroot/opt/vyatta/etc/config.boot.default
+          system {
+              host-name vyos
+              login {
+                  user vyos {
+                      authentication {
+                          encrypted-password $6$QxPS.uk6mfo$9QBSo8u1FkH16gMyAVhus6fU3LOzvLR9Z9.82m3tiHFAxTtIkhaZSWssSgzt4v4dGAL8rhVQxTg0oAG9/q11h/
+                          plaintext-password ""
+                      }
+                  }
+              }
+              syslog {
+                  global {
+                      facility all {
+                          level info
+                      }
+                      facility protocols {
+                          level debug
+                      }
+                  }
+              }
+              ntp {
+                  server "time1.vyos.net"
+                  server "time2.vyos.net"
+                  server "time3.vyos.net"
+              }
+              console {
+                  device ttyS0 {
+                      speed 115200
+                  }
+              }
+              config-management {
+                  commit-revisions 100
+              }
+          }
 
-    - name: Build standard iso
-      run: |
-        pwd
-        cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make iso"
-        mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
-        pwd
-        ls -l . build
-        
-    - name: Build AWS iso
-      run: |
-        pwd
-        cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-aws --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make AWS"
-        mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
-        pwd
-        ls -l . build
+          service {
+              lldp {
+                  interface all {
+                  }
+                  ssh {
+                  }
+              }
+          }
 
-    - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.VERSION }}
-        release_name: Release ${{ env.VERSION }}
-        draft: false
-        prerelease: false
-    
-    - name: Upload standard release asset
-      id: upload-release-asset-1
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./vyos-${{ env.VERSION }}-standard.iso
-        asset_name: vyos-standard.iso
-        asset_content_type: application/x-iso9660-image
-          
-    - name: Upload AWS release asset
-      id: upload-release-asset-2
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./vyos-${{ env.VERSION }}-aws.iso
-        asset_name: vyos-aws.iso
-        asset_content_type: application/x-iso9660-image
+          vrf {
+              bind-to-all
+              name mgmt {
+                  table 100
+              }
+          }
+
+          interfaces {
+              ethernet eth0 {
+                  address dhcp
+                  vrf mgmt
+              }
+              ethernet eth1 {
+              }
+              ethernet eth2 {
+              }
+              ethernet eth3 {
+              }
+              loopback lo {
+              }
+          }
+          CONFIG_BOOT_DEFAULT
+
+      - name: Build custom vyos-1x
+        run: |
+          cd $GITHUB_WORKSPACE
+          wget http://dev.packages.vyos.net/repositories/current/pool/main/libv/libvyosconfig0/libvyosconfig0_0.0.10_amd64.deb
+          sudo dpkg -i libvyosconfig0_0.0.10_amd64.deb
+          sudo apt install debhelper gcc-multilib clang llvm libelf-dev libpcap-dev libzmq3-dev python3-coverage python3-lxml python3-sphinx python3-xmltodict quilt whois python3-nose dh-python \
+              python3-psutil libbpfcc-dev libbpfcc
+          git clone https://github.com/vyos/vyos-1x.git
+          cd vyos-1x
+          git checkout 29463355
+          # customisations will go here
+          make all
+          make deb
+          find . -ls
+
+      - name: Build standard iso
+        run: |
+          pwd
+          cd $GITHUB_WORKSPACE
+          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
+              bash -c "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard --custom-package '$CUSTOM_PACKAGES'; sudo make iso"
+          mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
+          pwd
+          ls -l . build
+
+      - name: Build AWS iso
+        run: |
+          pwd
+          cd $GITHUB_WORKSPACE
+          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
+              bash -c "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-aws --custom-package '$CUSTOM_PACKAGES'; sudo make AWS"
+          mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
+          pwd
+          ls -l . build
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload standard release asset
+        id: upload-release-asset-1
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`.
+          # See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./vyos-${{ env.VERSION }}-standard.iso
+          asset_name: vyos-standard.iso
+          asset_content_type: application/x-iso9660-image
+
+      - name: Upload AWS release asset
+        id: upload-release-asset-2
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`.
+          # See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./vyos-${{ env.VERSION }}-aws.iso
+          asset_name: vyos-aws.iso
+          asset_content_type: application/x-iso9660-image
