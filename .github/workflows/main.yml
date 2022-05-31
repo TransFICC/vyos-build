@@ -39,10 +39,6 @@ jobs:
         run: |
           echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
 
-      - name: Set CUSTOM_PACKAGES variable
-        run: |
-          echo "CUSTOM_PACKAGES='krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'" >> $GITHUB_ENV
-
       - name: Update config.boot.default
         run: |
           cat <<CONFIG_BOOT_DEFAULT > $GITHUB_WORKSPACE/data/live-build-config/includes.chroot/opt/vyatta/etc/config.boot.default
@@ -113,24 +109,25 @@ jobs:
           }
           CONFIG_BOOT_DEFAULT
 
-      - name: Build custom vyos-1x
-        run: |
-          cd $GITHUB_WORKSPACE
-          git clone https://github.com/vyos/vyos-1x.git
-          cd vyos-1x
-          # customisations will go here
-          # end of customisations
-          cd $GITHUB_WORKSPACE
-          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
-              bash -c "cd vyos-1x; make all; debuild -us -uc -b"
-          find . -ls
+#     - name: Build custom vyos-1x
+#       run: |
+#         cd $GITHUB_WORKSPACE
+#         git clone https://github.com/vyos/vyos-1x.git
+#         cd vyos-1x
+#         # customisations will go here
+#         # end of customisations
+#         cd $GITHUB_WORKSPACE
+#         docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
+#             bash -c "cd vyos-1x; debuild -us -uc -b"
+#         find . -ls
 
       - name: Build standard iso
         run: |
           pwd
           cd $GITHUB_WORKSPACE
-          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
-              bash -c "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard --custom-package '$CUSTOM_PACKAGES'; sudo make iso"
+          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
+            "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
+             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make iso"
           mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
           pwd
           ls -l . build
@@ -139,8 +136,9 @@ jobs:
         run: |
           pwd
           cd $GITHUB_WORKSPACE
-          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
-              bash -c "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-aws --custom-package '$CUSTOM_PACKAGES'; sudo make AWS"
+          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
+            "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-aws \
+             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make AWS"
           mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
           pwd
           ls -l . build
