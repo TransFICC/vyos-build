@@ -1,4 +1,7 @@
+---
 # This is a basic workflow to help you get started with Actions
+# rebased against upstream/current = e01283e75aaf21bc171b4aa791206b498380c1eb
+# previously rebased against dc5e42b9daa97a35ab9fa4cb473b62b7abb146da
 
 name: CI
 
@@ -18,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
+    steps:   
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
@@ -58,12 +61,31 @@ jobs:
           apt download -t buster-rec-43 $package
         done
         ls -la $GITHUB_WORKSPACE/packages
-        
+
+    - name: Add telegraf
+      run: |
+        cd $GITHUB_WORKSPACE/packages
+        wget https://dl.influxdata.com/telegraf/releases/telegraf_1.18.2-1_amd64.deb
+
+#   - name: Build custom vyos-1x
+#     run: |
+#       cd $GITHUB_WORKSPACE
+#       wget http://dev.packages.vyos.net/repositories/current/pool/main/libv/libvyosconfig0/libvyosconfig0_0.0.10_amd64.deb
+#       sudo dpkg -i libvyosconfig0_0.0.10_amd64.deb
+#       sudo apt install debhelper gcc-multilib clang llvm libelf-dev libpcap-dev libzmq3-dev python3-coverage python3-lxml python3-sphinx python3-xmltodict quilt whois python3-nose dh-python python3-psutil libbpf-dev
+#       git clone https://github.com/vyos/vyos-1x.git
+#       cd vyos-1x
+#       git checkout 29463355
+#       # customisations will go here
+#       make all
+#       make deb
+#       find . -ls
+
     - name: Build standard iso
       run: |
         pwd
         cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libboost-filesystem1.67.0/buster libboost-system1.67.0/buster libprotobuf17/buster pdns-recursor=4.3.7-1pdns.buster'; sudo make iso"
+        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libboost-filesystem1.67.0/buster libboost-system1.67.0/buster libprotobuf17/buster pdns-recursor=4.3.7-1pdns.buster telegraf libpam-ldapd nslcd kstart vim'; sudo make iso"
         mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
         pwd
         ls -l . build
@@ -72,7 +94,7 @@ jobs:
       run: |
         pwd
         cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-aws --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libboost-filesystem1.67.0/buster libboost-system1.67.0/buster libprotobuf17/buster pdns-recursor=4.3.7-1pdns.buster'; sudo make AWS"
+        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-aws --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libboost-filesystem1.67.0/buster libboost-system1.67.0/buster libprotobuf17/buster pdns-recursor=4.3.7-1pdns.buster telegraf libpam-ldapd nslcd kstart vim'; sudo make AWS"
         mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
         pwd
         ls -l . build
