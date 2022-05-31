@@ -116,16 +116,13 @@ jobs:
       - name: Build custom vyos-1x
         run: |
           cd $GITHUB_WORKSPACE
-          wget http://dev.packages.vyos.net/repositories/current/pool/main/libv/libvyosconfig0/libvyosconfig0_0.0.10_amd64.deb
-          sudo dpkg -i libvyosconfig0_0.0.10_amd64.deb
-          sudo apt install debhelper gcc-multilib clang llvm libelf-dev libpcap-dev libzmq3-dev python3-coverage python3-lxml python3-sphinx python3-xmltodict quilt whois python3-nose dh-python \
-              python3-psutil libbpfcc-dev libbpfcc
           git clone https://github.com/vyos/vyos-1x.git
           cd vyos-1x
-          git checkout 29463355
           # customisations will go here
-          make all
-          sudo debuild -us -uc -b
+          # end of customisations
+          cd $GITHUB_WORKSPACE
+          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
+              bash -c "cd vyos-1x; make all; debuild -us -uc -b"
           find . -ls
 
       - name: Build standard iso
