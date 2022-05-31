@@ -18,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -30,8 +30,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-          curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
           sudo apt update
           sudo apt install -y docker-ce docker-ce-cli containerd.io
 
@@ -119,13 +119,13 @@ jobs:
           wget http://dev.packages.vyos.net/repositories/current/pool/main/libv/libvyosconfig0/libvyosconfig0_0.0.10_amd64.deb
           sudo dpkg -i libvyosconfig0_0.0.10_amd64.deb
           sudo apt install debhelper gcc-multilib clang llvm libelf-dev libpcap-dev libzmq3-dev python3-coverage python3-lxml python3-sphinx python3-xmltodict quilt whois python3-nose dh-python \
-              python3-psutil libbpf-dev libbpf
+              python3-psutil libbpfcc-dev libbpfcc
           git clone https://github.com/vyos/vyos-1x.git
           cd vyos-1x
           git checkout 29463355
           # customisations will go here
           make all
-          make deb
+          sudo debuild -us -uc -b
           find . -ls
 
       - name: Build standard iso
