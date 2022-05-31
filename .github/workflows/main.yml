@@ -114,13 +114,12 @@ jobs:
           cd $GITHUB_WORKSPACE
           git clone https://github.com/vyos/vyos-1x.git
           cd vyos-1x
-          git checkout 51f9de97
           # customisations will go here
           # end of customisations
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0 -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
-              bash -c "cd vyos-1x; make deb"
-          find . -ls
+          bash -c "cd vyos-1x; make all; make deb"
+          find . -name '*.deb' -ls
 
       - name: Build standard iso
         run: |
