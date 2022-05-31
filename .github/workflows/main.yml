@@ -39,33 +39,17 @@ jobs:
       run: |
         echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
 
-    - name: Add sid/unstable repository and download debs required for freeipa-client and lighttpd
-      run: |
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
-        sudo add-apt-repository "deb http://ftp.de.debian.org/debian sid main contrib non-free"
-        cd $GITHUB_WORKSPACE/packages
-        for package in libnspr4 libnss3 freeipa-common libnss3-tools librpmio8 librpm8 python3-cffi-backend python3-cffi python3-gssapi python3-ipalib python3-ipaclient freeipa-client lighttpd-mod-deflate
-        do
-          apt download -t sid $package
-        done
-        ls -la $GITHUB_WORKSPACE/packages
-
-    - name: Add powerdns repository and download debs required for previous pdns-recursor version
-      run: |
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FD380FBB
-        sudo add-apt-repository "deb http://repo.powerdns.com/debian buster-rec-43 main"
-        cd $GITHUB_WORKSPACE/packages
-        for package in pdns-recursor
-        do
-          apt download -t buster-rec-43 $package
-        done
-        ls -la $GITHUB_WORKSPACE/packages
-
-    - name: Add telegraf
-      run: |
-        cd $GITHUB_WORKSPACE/packages
-        wget https://dl.influxdata.com/telegraf/releases/telegraf_1.18.2-1_amd64.deb
+#   - name: Add sid/unstable repository and download debs required for freeipa-client and lighttpd
+#     run: |
+#       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC
+#       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
+#       sudo add-apt-repository "deb http://ftp.de.debian.org/debian sid main contrib non-free"
+#       cd $GITHUB_WORKSPACE/packages
+#       for package in libnspr4 libnss3 freeipa-common libnss3-tools librpmio8 librpm8 python3-cffi-backend python3-cffi python3-gssapi python3-ipalib python3-ipaclient freeipa-client
+#       do
+#         apt download -t sid $package
+#       done
+#       ls -la $GITHUB_WORKSPACE/packages
 
 #   - name: Build custom vyos-1x
 #     run: |
@@ -85,7 +69,7 @@ jobs:
       run: |
         pwd
         cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libboost-filesystem1.67.0/buster libboost-system1.67.0/buster libprotobuf17/buster pdns-recursor=4.3.7-1pdns.buster telegraf libpam-ldapd nslcd kstart vim'; sudo make iso"
+        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-standard --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make iso"
         mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
         pwd
         ls -l . build
@@ -94,7 +78,7 @@ jobs:
       run: |
         pwd
         cd $GITHUB_WORKSPACE
-        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-aws --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libboost-context1.67.0/buster libboost-filesystem1.67.0/buster libboost-system1.67.0/buster libprotobuf17/buster pdns-recursor=4.3.7-1pdns.buster telegraf libpam-ldapd nslcd kstart vim'; sudo make AWS"
+        docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c "./configure --architecture amd64 --build-by dev@transficc.com --build-type release --version $VERSION-aws --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make AWS"
         mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
         pwd
         ls -l . build
