@@ -124,74 +124,10 @@ jobs:
           systemctl enable pdns-recursor.service
           EOSERVICES
 
-      - name: Build custom vyos-1x
+      - name: Pull in custom vyos-1x
         run: |
-          cd $GITHUB_WORKSPACE
-          git clone https://github.com/vyos/vyos-1x.git
-          cd vyos-1x
-          ## customisations will go here
-
-          # sshd_config
-          sed -i -e '/^# User configurable section/i # Added freeipa config\n\n#' data/templates/ssh/sshd_config.j2
-          sed -i -e '/^# Added freeipa config/a UsePAM yes' data/templates/ssh/sshd_config.j2
-          sed -i -e '/^# Added freeipa config/a GSSAPIAuthentication yes' data/templates/ssh/sshd_config.j2
-          sed -i -e 's/^ChallengeResponseAuthentication no/# &/' data/templates/ssh/sshd_config.j2
-          sed -i -e '/^# Added freeipa config/a ChallengeResponseAuthentication yes' data/templates/ssh/sshd_config.j2
-          sed -i -e '/^# Added freeipa config/a AuthorizedKeysCommandUser nobody' data/templates/ssh/sshd_config.j2
-          sed -i -e '/^# Added freeipa config/a AuthorizedKeysCommand /usr/bin/sss_ssh_authorizedkeys' data/templates/ssh/sshd_config.j2
-
-          # pdns-recursor
-          mkdir -p ./src/etc/systemd/system/pdns-recursor.service.d
-          cat <<EOPDNS_SERVICE > ./src/etc/systemd/system/pdns-recursor.service.d/override.conf
-          [Service]
-          User=root
-          WorkingDirectory=
-          WorkingDirectory=/run/powerdns
-          RuntimeDirectory=
-          RuntimeDirectory=powerdns
-          RuntimeDirectoryPreserve=yes
-          ExecStart=
-          ExecStart=/bin/ip vrf exec mgmt /usr/sbin/pdns_recursor --daemon=no --write-pid=no --disable-syslog --log-timestamp=no --config-dir=/run/powerdns --socket-dir=/run/powerdns --setuid=pdns
-
-          LimitMEMLOCK=8388608
-          CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_CHOWN CAP_SYS_ADMIN CAP_NET_ADMIN CAP_DAC_OVERRIDE CAP_SETUID
-          AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_CHOWN CAP_SYS_ADMIN CAP_NET_ADMIN CAP_DAC_OVERRIDE CAP_SETUID
-          ProtectControlGroups=false
-          RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
-          EOPDNS_SERVICE
-
-          # telegraf config
-          ln -s /config/telegraf ./src/etc/telegraf
-          mkdir -p ./src/etc/systemd/system/telegraf.service.d
-          cat <<EOTELEGRAF_SERVICE > ./src/etc/systemd/system/telegraf.service.d/override.conf
-          [Unit]
-          After=vyos-router.service
-
-          [Service]
-          User=root
-          ExecStart=
-          ExecStart=/usr/sbin/ip vrf exec mgmt /sbin/runuser -u telegraf -- /usr/bin/telegraf -config /etc/telegraf/telegraf.conf -config-directory /etc/telegraf/telegraf.d $TELEGRAF_OPTS
-          RestartSec=10s
-
-          [Install]
-          WantedBy=
-          WantedBy=vyos.target
-          EOTELEGRAF_SERVICE
-
-          # nslcd config
-          mkdir -p ./src/etc/systemd/system/nslcd.service.d
-          cat <<EONSLCD_SERVICE > ./src/etc/systemd/system/nslcd.service.d/override.conf
-          [Service]
-          ExecStart=
-          ExecStart=/usr/bin/ip vrf exec mgmt
-          EONSLCD_SERVICE
-
-          ## end of customisations
-          cd $GITHUB_WORKSPACE
-          docker run --rm --privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0 -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current \
-          bash -c "cd vyos-1x; make all; make deb"
-          find . -name '*.deb' -ls
-          cp ./vyos-1x_1.4*.deb packages/
+          cd $GITHUB_WORKSPACE/packages
+          wget https://github.com/TransFICC/vyos-1x/releases/latest/download/vyos-1x_amd64.deb -O vyos-1x_amd64.deb
 
       - name: Build standard iso
         run: |
