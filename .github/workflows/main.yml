@@ -48,10 +48,10 @@ jobs:
 #         systemctl enable pdns-recursor.service
 #         EOSERVICES
 
-#     - name: Pull in custom vyos-1x
-#       run: |
-#         cd $GITHUB_WORKSPACE/packages
-#         wget https://github.com/TransFICC/vyos-1x/releases/latest/download/vyos-1x_amd64.deb -O vyos-1x_amd64.deb
+      - name: Pull in custom vyos-1x
+        run: |
+          cd $GITHUB_WORKSPACE/packages
+          wget https://github.com/TransFICC/vyos-1x/releases/latest/download/vyos-1x_amd64.deb -O vyos-1x_amd64.deb
 
       - name: Build standard iso
         run: |
