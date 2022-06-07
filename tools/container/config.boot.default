@@ -34,7 +34,33 @@ system {
     }
 }
 
+service {
+    lldp {
+        interface all {
+        }
+    }
+    ssh {
+    }
+}
+
+vrf {
+    bind-to-all
+    name mgmt {
+        table 100
+    }
+}
+
 interfaces {
+    ethernet eth0 {
+        address dhcp
+        vrf mgmt
+    }
+    ethernet eth1 {
+    }
+    ethernet eth2 {
+    }
+    ethernet eth3 {
+    }
     loopback lo {
     }
 }
