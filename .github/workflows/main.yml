@@ -42,8 +42,8 @@ jobs:
       - name: Update config.boot.default
         run: |
           echo Before
-          find $GITHUB_WORKSPACE -name config.boot.default -ls
-          cat <<CONFIG_BOOT_DEFAULT > $GITHUB_WORKSPACE/data/live-build-config/includes.chroot/opt/vyatta/etc/config.boot.default
+          find $GITHUB_WORKSPACE -name config.boot.* -ls
+          cat <<CONFIG_BOOT_DEFAULT > $GITHUB_WORKSPACE/data/live-build-config/includes.chroot/opt/vyatta/etc/config.boot.transficc
           system {
               host-name vyos
               login {
@@ -113,21 +113,21 @@ jobs:
           }
           CONFIG_BOOT_DEFAULT
           echo After
-          find $GITHUB_WORKSPACE -name config.boot.default -ls
+          find $GITHUB_WORKSPACE -name config.boot.* -ls
 
-      - name: Enable some additional services by default
-        run: |
-          echo <<EOSERVICES >> $GITHUB_WORKSPACE/data/live-build-config/hooks/live/18-enable-disable_services.chroot
-          systemctl enable telegraf.service
-          systemctl enable sssd.service
-          systemctl enable nslcd.service
-          systemctl enable pdns-recursor.service
-          EOSERVICES
+#     - name: Enable some additional services by default
+#       run: |
+#         echo <<EOSERVICES >> $GITHUB_WORKSPACE/data/live-build-config/hooks/live/18-enable-disable_services.chroot
+#         systemctl enable telegraf.service
+#         systemctl enable sssd.service
+#         systemctl enable nslcd.service
+#         systemctl enable pdns-recursor.service
+#         EOSERVICES
 
-      - name: Pull in custom vyos-1x
-        run: |
-          cd $GITHUB_WORKSPACE/packages
-          wget https://github.com/TransFICC/vyos-1x/releases/latest/download/vyos-1x_amd64.deb -O vyos-1x_amd64.deb
+#     - name: Pull in custom vyos-1x
+#       run: |
+#         cd $GITHUB_WORKSPACE/packages
+#         wget https://github.com/TransFICC/vyos-1x/releases/latest/download/vyos-1x_amd64.deb -O vyos-1x_amd64.deb
 
       - name: Build standard iso
         run: |
