@@ -56,7 +56,6 @@ jobs:
                               key "AAAAB3NzaC1yc2EAAAADAQABAAABAQCGtR31sHqfYujKGFvffhYePkdHNg9TpNFI72crbMRi0VGxVW7tVCFd5fNxVpUsCiiIQEXMPY92sahTqgkZ8OCxA6c2zOYzEAKQvfl4DfCUQKXC5Zeov8CNPYXgou47oFjHf0VpfknUqzbZAt+h/Bn17avCkNnDO21SN+9Je2nlbCy6/kbiOsXjOf8E8VldK8vPYHRheYU0Id7Zx3tLu2Enn1wxCvLgSRdGdFr2dnG8jqqs9MvB3IMX0GVAf5NjdB/6EeOMMx3gZoy2SbgpDxs7aG0z5wdaSMXiA5Bk0RN44IVyP0eQGDC7fUOH3Vjhk5QxDSVPgC4INMvbRtMitM01"
                           }
                       }
-                      level admin
                   }
               }
               syslog {
