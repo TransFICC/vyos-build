@@ -60,7 +60,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
             "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
-             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION'; sudo make iso"
+             --custom-package 'vyos-1x=$VYOS_1X_VERSION krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make iso"
           mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
           pwd
           ls -l . build
@@ -71,7 +71,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
             "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-aws \
-             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION'; sudo make AWS"
+             --custom-package 'vyos-1x=$VYOS_1X_VERSION krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make AWS"
           mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
           pwd
           ls -l . build
