@@ -23,6 +23,7 @@ system {
         server "time1.vyos.net"
         server "time2.vyos.net"
         server "time3.vyos.net"
+        vrf mgmt
     }
     console {
         device ttyS0 {
@@ -40,6 +41,7 @@ service {
         }
     }
     ssh {
+        vrf mgmt
     }
 }
 
