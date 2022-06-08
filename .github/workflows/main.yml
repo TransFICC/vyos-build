@@ -39,15 +39,6 @@ jobs:
         run: |
           echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
 
-#     - name: Enable some additional services by default
-#       run: |
-#         echo <<EOSERVICES >> $GITHUB_WORKSPACE/data/live-build-config/hooks/live/18-enable-disable_services.chroot
-#         systemctl enable telegraf.service
-#         systemctl enable sssd.service
-#         systemctl enable nslcd.service
-#         systemctl enable pdns-recursor.service
-#         EOSERVICES
-
       - name: Pull in custom vyos-1x
         run: |
           cd $GITHUB_WORKSPACE/packages
@@ -60,7 +51,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
             "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
-             --custom-package 'vyos-1x=$VYOS_1X_VERSION krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make iso"
+             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart nslcd sssd libpam-ldapd vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION'; sudo make iso"
           mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
           pwd
           ls -l . build
@@ -71,7 +62,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
             "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-aws \
-             --custom-package 'vyos-1x=$VYOS_1X_VERSION krb5-pkinit lighttpd python3-apt tmux realmd sssd libpam-ldapd nslcd kstart vim freeipa-client lighttpd-mod-deflate'; sudo make AWS"
+             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart nslcd sssd libpam-ldapd vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION'; sudo make AWS"
           mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
           pwd
           ls -l . build
