@@ -51,25 +51,15 @@ jobs:
           wget https://github.com/TransFICC/vyos-1x/releases/latest/download/vyos-1x_amd64.deb -O vyos-1x_amd64.deb
           echo "VYOS_1X_VERSION=$(dpkg-deb -I vyos-1x_amd64.deb | awk '/Version:/{print $2}')" >> $GITHUB_ENV
 
-      - name: Build standard iso
+      - name: Build standard and AWS isos
         run: |
           pwd
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
             "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
-             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart nslcd sssd libpam-ldapd vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION'; sudo make iso"
-          mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso
-          pwd
-          ls -l . build
-
-      - name: Build AWS iso
-        run: |
-          pwd
-          cd $GITHUB_WORKSPACE
-          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
-            "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-aws \
-             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart nslcd sssd libpam-ldapd vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION'; sudo make AWS"
-          mv $GITHUB_WORKSPACE/build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso
+             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart nslcd sssd libpam-ldapd vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION'; \
+             sudo make iso ; mv build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso ; \
+             sudo make AWS ; mv build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso ; "
           pwd
           ls -l . build
 
