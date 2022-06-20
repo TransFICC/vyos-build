@@ -41,7 +41,6 @@ service {
         }
     }
     ssh {
-        vrf mgmt
     }
     dns {
         forwarding {
