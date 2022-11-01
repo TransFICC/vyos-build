@@ -51,15 +51,14 @@ jobs:
           wget https://github.com/TransFICC/vyos-1x/releases/latest/download/vyos-1x_amd64.deb -O vyos-1x_amd64.deb
           echo "VYOS_1X_VERSION=$(dpkg-deb -I vyos-1x_amd64.deb | awk '/Version:/{print $2}')" >> $GITHUB_ENV
 
-      - name: Build standard and AWS isos
+      - name: Build standard iso
         run: |
           pwd
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
             "./configure --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
              --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart libpam-ldapd vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION nslcd sssd'; \
-             (sudo make iso ; mv build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso ) && \
-             (sudo make AWS ; mv build/live-image-amd64.hybrid.iso vyos-$VERSION-aws.iso ); "
+             (sudo make iso ; ls -la ./ ; ls -la build/ ; sudo mv build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso ); "
           pwd
           ls -l . build
 
@@ -85,17 +84,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./vyos-${{ env.VERSION }}-standard.iso
           asset_name: vyos-standard.iso
-          asset_content_type: application/x-iso9660-image
-
-      - name: Upload AWS release asset
-        id: upload-release-asset-2
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`.
-          # See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./vyos-${{ env.VERSION }}-aws.iso
-          asset_name: vyos-aws.iso
           asset_content_type: application/x-iso9660-image
