@@ -20,3 +20,10 @@ jobs:
           upstream: vyos/vyos-build
           branch: current
           depth: 0
+
+      - name: Push remote tags to fork
+        run: |
+          set -ex;
+          git fetch upstream --tags;
+          git push origin --tags;
+        shell: bash
