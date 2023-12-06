@@ -18,7 +18,7 @@ jobs:
         uses: imba-tjd/rebase-upstream-action@0.5
         with:
           upstream: vyos/vyos-build
-          branch: current
+          branch: sagitta
           depth: 0
 
       - name: Push remote tags to fork
