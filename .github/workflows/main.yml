@@ -42,7 +42,7 @@ jobs:
 
       - name: Set VERSION variable
         run: |
-          echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
+          echo "VERSION=1.4-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
 
 #     - name: Pull in custom vyos-1x
 #       run: |
@@ -55,9 +55,9 @@ jobs:
           pwd
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:sagitta bash -c \
-            "sudo make clean; sudo ./build-vyos-image iso --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
+            "sudo make clean; sudo ./build-vyos-image iso --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION \
             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart libpam-ldapd vim freeipa-client lighttpd-mod-deflate nslcd sssd' \
-             ; ls -la ./ ; ls -la build/ ; sudo mv build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso;"
+             ; ls -la ./ ; ls -la build/ ; sudo mv build/live-image-amd64.hybrid.iso vyos-$VERSION.iso;"
           pwd
           ls -l . build
 
@@ -81,6 +81,6 @@ jobs:
           # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`.
           # See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./vyos-${{ env.VERSION }}-standard.iso
-          asset_name: vyos-standard.iso
+          asset_path: ./vyos-${{ env.VERSION }}.iso
+          asset_name: vyos.iso
           asset_content_type: application/x-iso9660-image
