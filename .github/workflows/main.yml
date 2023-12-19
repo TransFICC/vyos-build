@@ -82,5 +82,5 @@ jobs:
           # See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./vyos-${{ env.VERSION }}.iso
-          asset_name: vyos.iso
+          asset_name: vyos-standard.iso
           asset_content_type: application/x-iso9660-image
