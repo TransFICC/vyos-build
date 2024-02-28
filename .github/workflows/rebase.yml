@@ -16,6 +16,8 @@ jobs:
 
       - name: Rebase with upstream
         uses: imba-tjd/rebase-upstream-action@0.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upstream: vyos/vyos-build
           branch: sagitta
