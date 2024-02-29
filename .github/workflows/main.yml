@@ -43,7 +43,7 @@ jobs:
 
       - name: Set VERSION variable
         run: |
-          echo "VERSION=1.4-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
+          echo "VERSION=1.5-rolling-$(date +%Y%m%d%H%M)-transficc" >> $GITHUB_ENV
 
       - name: Pull in custom vyos-1x
         run: |
