@@ -56,7 +56,7 @@ jobs:
 #          pwd
 #          cd $GITHUB_WORKSPACE
 #          docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
-#            "sudo make clean; sudo ./build-vyos-image iso --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION \
+#            "sudo make clean; sudo ./build-vyos-image generic --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION \
 #             --custom-package 'krb5-pkinit lighttpd python3-apt tmux realmd kstart libpam-ldapd vim freeipa-client lighttpd-mod-deflate vyos-1x=$VYOS_1X_VERSION nslcd sssd'; \
 #             ; ls -la ./ ; ls -la build/ ; sudo mv build/live-image-amd64.hybrid.iso vyos-$VERSION.iso;"
 #          pwd
@@ -67,7 +67,7 @@ jobs:
           pwd
           cd $GITHUB_WORKSPACE
           docker run --rm --privileged -v $GITHUB_WORKSPACE:/vyos -w /vyos vyos/vyos-build:current bash -c \
-            "sudo make clean; sudo ./build-vyos-image iso --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
+            "sudo make clean; sudo ./build-vyos-image generic --architecture amd64 --build-by sre@transficc.com --build-type release --version $VERSION-standard \
              ; ls -la ./ ; ls -la build/ ; sudo mv build/live-image-amd64.hybrid.iso vyos-$VERSION-standard.iso;"
           pwd
           ls -l . build
